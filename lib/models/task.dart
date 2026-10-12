@@ -1,7 +1,9 @@
+// The three states a task can be in.
 enum TaskStatus { todo, inProgress, completed }
-
+// How important a task is.
 enum TaskPriority { low, medium, high }
 
+//A task holds all the information about one to-do item
 class Task {
   final int? id;
   final String title;
@@ -10,7 +12,7 @@ class Task {
   final TaskPriority priority;
   final TaskStatus status;
 
-  const Task({
+  Task({
     this.id,
     required this.title,
     this.description = '',
@@ -19,8 +21,9 @@ class Task {
     this.status = TaskStatus.todo,
   });
 
+  //Makes a copy of this task with some fields changed.
+  // Fields are final, so we copy instead of editing.
   Task copyWith({
-    int? id,
     String? title,
     String? description,
     DateTime? dueDate,
@@ -37,6 +40,7 @@ class Task {
     );
   }
 
+  //Turns a Task into a Map so it can be saved in the database.
   Map<String, Object?> toMap() {
     return {
       'id': id,
@@ -48,6 +52,7 @@ class Task {
     };
   }
 
+  // Turns a Map from the database back into a Task
   factory Task.fromMap(Map<String, Object?> map) {
     return Task(
       id: map['id'] as int?,
