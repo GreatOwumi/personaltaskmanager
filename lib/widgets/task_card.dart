@@ -6,8 +6,14 @@ import '../models/task.dart';
 class TaskCard extends StatelessWidget {
   final Task task;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
-  const TaskCard({super.key, required this.task, required this.onDelete});
+  const TaskCard({
+    super.key,
+    required this.task,
+    required this.onDelete,
+    required this.onTap,
+  });
 
   // Picks a colour for each priority.
   Color _priorityColor() {

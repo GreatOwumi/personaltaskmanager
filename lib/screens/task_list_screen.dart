@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/task.dart';
 import '../provider/task_provider.dart';
 import '../widgets/task_card.dart';
+import 'task_form_screen.dart';
 
 // The main screen: shows all tasks.
 class TaskListScreen extends StatelessWidget {
@@ -26,6 +26,14 @@ class TaskListScreen extends StatelessWidget {
           final task = provider.tasks[index];
           return TaskCard(
             task: task,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TaskFormScreen(task: task),
+                ),
+              );
+            },
             onDelete: () => context.read<TaskProvider>().deleteTask(task.id!),
           );
         },
@@ -36,15 +44,11 @@ class TaskListScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Personal Task Manager')),
       body: body,
       floatingActionButton: FloatingActionButton(
-        // Temporary: adds a sample task. We build the real form in Stage 5.
         onPressed: () {
-          context.read<TaskProvider>().addTask(
-                Task(
-                  title: 'Sample task',
-                  description: 'Added with the + button',
-                  dueDate: DateTime.now(),
-                ),
-              );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const TaskFormScreen()),
+          );
         },
         child: const Icon(Icons.add),
       ),
