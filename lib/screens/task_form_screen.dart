@@ -63,12 +63,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     }
   }
 
-  // Checks the form, then saves the task and closes the screen.
+    // Checks the form, then saves the task and closes the screen.
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = context.read<TaskProvider>();
     final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
     if (_isEditing) {
       final updated = widget.task!.copyWith(
@@ -90,9 +91,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       await provider.addTask(newTask);
     }
 
+    // If saving failed, stay on the form and show the error.
+    final error = provider.errorMessage;
+    if (error != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     navigator.pop();
   }
-
   @override
   Widget build(BuildContext context) {
     final dateText = '${_dueDate.day}/${_dueDate.month}/${_dueDate.year}';

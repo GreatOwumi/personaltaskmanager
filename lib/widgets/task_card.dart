@@ -5,14 +5,16 @@ import '../models/task.dart';
 // Shows one task as a card.
 class TaskCard extends StatelessWidget {
   final Task task;
-  final VoidCallback onDelete;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
+  final ValueChanged<TaskStatus> onStatusChanged;
 
   const TaskCard({
     super.key,
     required this.task,
-    required this.onDelete,
     required this.onTap,
+    required this.onDelete,
+    required this.onStatusChanged,
   });
 
   // Picks a colour for each priority.
@@ -47,6 +49,7 @@ class TaskCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
+        onTap: onTap,
         title: Text(
           task.title,
           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -61,7 +64,7 @@ class TaskCard extends StatelessWidget {
               children: [
                 Chip(
                   label: Text(task.priority.name),
-                  backgroundColor: _priorityColor().withOpacity(0.2),
+                  backgroundColor: _priorityColor().withValues(alpha: 0.2),
                 ),
                 const SizedBox(width: 8),
                 Chip(label: Text(_statusText())),
@@ -69,9 +72,31 @@ class TaskCard extends StatelessWidget {
             ),
           ],
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: onDelete,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Menu for changing the status without opening the form.
+            PopupMenuButton<TaskStatus>(
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: 'Change status',
+              onSelected: onStatusChanged,
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: TaskStatus.todo, child: Text('To Do')),
+                PopupMenuItem(
+                  value: TaskStatus.inProgress,
+                  child: Text('In Progress'),
+                ),
+                PopupMenuItem(
+                  value: TaskStatus.completed,
+                  child: Text('Completed'),
+                ),
+              ],
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: onDelete,
+            ),
+          ],
         ),
       ),
     );
