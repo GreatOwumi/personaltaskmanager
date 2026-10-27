@@ -98,7 +98,22 @@ class TaskListScreen extends StatelessWidget {
     if (provider.isLoading) {
       body = const Center(child: CircularProgressIndicator());
     } else if (tasks.isEmpty) {
-      body = const Center(child: Text('No tasks found.'));
+      body = Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.checklist,
+              size: 64,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+            const SizedBox(height: 12),
+            const Text('No tasks found', style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 4),
+            const Text('Tap + to add one'),
+          ],
+        ),
+      );
     } else {
       body = ListView.builder(
         itemCount: tasks.length,

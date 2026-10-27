@@ -17,7 +17,7 @@ class TaskCard extends StatelessWidget {
     required this.onStatusChanged,
   });
 
-  // Picks a colour for each priority.
+  // The colour strip on the left shows the priority.
   Color _priorityColor() {
     switch (task.priority) {
       case TaskPriority.high:
@@ -29,7 +29,29 @@ class TaskCard extends StatelessWidget {
     }
   }
 
-  // Turns the status into text the user can read.
+  String _priorityText() {
+    switch (task.priority) {
+      case TaskPriority.high:
+        return 'High';
+      case TaskPriority.medium:
+        return 'Medium';
+      case TaskPriority.low:
+        return 'Low';
+    }
+  }
+
+  // The status badge has its own colour.
+  Color _statusColor() {
+    switch (task.status) {
+      case TaskStatus.todo:
+        return Colors.grey;
+      case TaskStatus.inProgress:
+        return Colors.blue;
+      case TaskStatus.completed:
+        return Colors.green;
+    }
+  }
+
   String _statusText() {
     switch (task.status) {
       case TaskStatus.todo:
@@ -41,62 +63,149 @@ class TaskCard extends StatelessWidget {
     }
   }
 
+  // A task is overdue if its date is before today and it is not completed.
+  bool _isOverdue() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return task.status != TaskStatus.completed && task.dueDate.isBefore(today);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isCompleted = task.status == TaskStatus.completed;
+    final overdue = _isOverdue();
+    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
     final date = task.dueDate;
     final dateText = '${date.day}/${date.month}/${date.year}';
+    final dateColor = overdue ? Colors.red : mutedColor;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: ListTile(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: onTap,
-        title: Text(
-          task.title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (task.description.isNotEmpty) Text(task.description),
-            Text('Due: $dateText'),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Chip(
-                  label: Text(task.priority.name),
-                  backgroundColor: _priorityColor().withValues(alpha: 0.2),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Priority colour strip.
+              Container(width: 6, color: _priorityColor()),
+
+              // Task details.
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        task.title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          // Completed tasks are crossed out and dimmed.
+                          decoration:
+                              isCompleted ? TextDecoration.lineThrough : null,
+                          color: isCompleted ? mutedColor : null,
+                        ),
+                      ),
+                      if (task.description.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          task.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: mutedColor),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 14,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          // Due date (red if overdue).
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.calendar_today,
+                                  size: 14, color: dateColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                overdue ? '$dateText (overdue)' : dateText,
+                                style: TextStyle(color: dateColor),
+                              ),
+                            ],
+                          ),
+                          // Priority label.
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.flag,
+                                  size: 14, color: _priorityColor()),
+                              const SizedBox(width: 4),
+                              Text(_priorityText()),
+                            ],
+                          ),
+                          // Status badge.
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _statusColor().withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              _statusText(),
+                              style: TextStyle(
+                                color: _statusColor(),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 8),
-                Chip(label: Text(_statusText())),
-              ],
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Menu for changing the status without opening the form.
-            PopupMenuButton<TaskStatus>(
-              icon: const Icon(Icons.swap_horiz),
-              tooltip: 'Change status',
-              onSelected: onStatusChanged,
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: TaskStatus.todo, child: Text('To Do')),
-                PopupMenuItem(
-                  value: TaskStatus.inProgress,
-                  child: Text('In Progress'),
-                ),
-                PopupMenuItem(
-                  value: TaskStatus.completed,
-                  child: Text('Completed'),
-                ),
-              ],
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: onDelete,
-            ),
-          ],
+              ),
+
+              // Action buttons on the right.
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PopupMenuButton<TaskStatus>(
+                    icon: const Icon(Icons.swap_horiz),
+                    tooltip: 'Change status',
+                    onSelected: onStatusChanged,
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: TaskStatus.todo,
+                        child: Text('To Do'),
+                      ),
+                      PopupMenuItem(
+                        value: TaskStatus.inProgress,
+                        child: Text('In Progress'),
+                      ),
+                      PopupMenuItem(
+                        value: TaskStatus.completed,
+                        child: Text('Completed'),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: 'Delete',
+                    onPressed: onDelete,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

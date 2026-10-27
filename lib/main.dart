@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Personal Task Manager',
+      title: ' Owumi Task Manager',
       // Light theme, built from one seed colour.
       theme: ThemeData(
         useMaterial3: true,
@@ -49,5 +49,9 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       home: const TaskListScreen(),
     );
+
+  
+
+
   }
 }
